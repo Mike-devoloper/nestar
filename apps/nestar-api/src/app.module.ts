@@ -7,13 +7,26 @@ import {ApolloDriver} from "@nestjs/apollo"
 import { AppResolver } from './app.resolver';
 import { ComponentsModule } from './components/components.module';
 import { DatabaseModule } from './database/database.module';
+import { T } from './libs/types/common';
 @Module({
   imports: [ConfigModule.forRoot(), GraphQLModule.forRoot({
     driver: ApolloDriver,
     playground: true,
     uploads: false,
     autoSchemaFile: true,
-  }), ComponentsModule, DatabaseModule],
+    formatError: (error: T) => {
+      const graphqlErrorFormatter = {
+        code: error?.extensions.code,
+        message: 
+        error?.extensions?.exception?.response?.message || error?.extensions?.response?.message || error?.message,
+      }
+      console.log("GRAPHQL GLABAL ERROR", graphqlErrorFormatter);
+      return graphqlErrorFormatter;
+    }
+  }),
+   ComponentsModule,
+    DatabaseModule
+  ],
   controllers: [AppController],
   providers: [AppService, AppResolver],
 })

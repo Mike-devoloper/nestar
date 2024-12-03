@@ -17,8 +17,8 @@ export class MemberService {
         //Token auth
         return result
         } catch (err) {
-            console.log("Error on signup service", err)
-            throw new BadRequestException
+            console.log("error ServiceModel: ", err.message)
+            throw new BadRequestException(Message.USED_MEMBER_NICK_OR_PHONE);
         }
     }
 
