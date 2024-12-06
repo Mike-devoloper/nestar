@@ -6,6 +6,9 @@ import { AuthGuard } from '../auth/guards/auth.guard';
 import { MemberService } from './member.service';
 import { Message } from '../../libs/types/enums/common.enum';
 import { AuthMember } from '../auth/decorators/authMember.decorator';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { MemberType } from '../../libs/types/enums/member.enums';
+import { RolesGuard } from '../auth/guards/roles.guard';
 
 @Resolver()
 export class MemberResolver {
@@ -39,6 +42,15 @@ export class MemberResolver {
         return `Hi ${memberNick}`;
     }
 
+
+    @Roles(MemberType.USER, MemberType.AGENT)
+    @UseGuards(RolesGuard)
+    @Mutation(() => String)
+    public async checkAuthRoles(@AuthMember() authMember: Member):Promise<string> {
+        console.log("authmember", authMember);
+        return `Hi ${authMember.memberNick}, You are ${authMember.memberType} (memberId: ${authMember._id})`;
+    }
+
     @Query(() => String)
     public async getMember ():Promise<string> {
         console.log("Mutatiion: getMember")
@@ -46,9 +58,12 @@ export class MemberResolver {
     }
 
     //Authorization ADMIN
+    @Roles(MemberType.ADMIN)
+    @UseGuards(RolesGuard)
     @Mutation(() => String)
-    public async getAllMembersByAdmin():Promise<string> {
+    public async getAllMembersByAdmin(@AuthMember() authMember: Member):Promise<string> {
         console.log("Mutatiion: getAllMembersByAdmin")
+        console.log("authMember ", authMember.memberType);
         return this.memberservice.getAllMembersByAdmin();
     }
 
