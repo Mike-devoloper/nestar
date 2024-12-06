@@ -1,4 +1,5 @@
 import { BadRequestException, Injectable, InternalServerErrorException } from '@nestjs/common';
+import { Mutation } from '@nestjs/graphql';
 import { InjectModel } from '@nestjs/mongoose';
 import { printSchema } from 'graphql';
 import { Model } from 'mongoose';
@@ -38,10 +39,10 @@ export class MemberService {
         if(!isMatch) throw new InternalServerErrorException(Message.WRONG_PASSWORD) 
         response.accessToken = await this.authservice.createToken(response);
 
-        
+
         return response;
     }
-
+    //Authenticated USER
     public async updateMember():Promise<string> {
         return "login exxecuted" 
     }
@@ -49,4 +50,17 @@ export class MemberService {
     public async getMember():Promise<string> {
         return "login exxecuted" 
     }
+
+
+    //AUTHORIZATION ADMIN 
+
+    public async getAllMembersByAdmin():Promise<string> {
+        return "getAllMembersByAdmin executed"
+    }
+
+    public async updateAllMembersByAdmin():Promise<string> {
+        return "updateAllMembersByAdmin executed"
+    }
+
 }
+    
