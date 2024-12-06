@@ -15,7 +15,8 @@ export class MemberService {
         input.memberPassword = await this.authservice.hashPassword(input.memberPassword)
         try {
             const result = await this.memberModel.create(input)
-        //Token auth
+            result.accessToken = await this.authservice.createToken(result);
+            console.log("accessToken ", result);
         return result
         } catch (err) {
             console.log("error ServiceModel: ", err.message)
@@ -35,6 +36,9 @@ export class MemberService {
         
         const isMatch = await this.authservice.comparePasswords(input.memberPassword, response.memberPassword);
         if(!isMatch) throw new InternalServerErrorException(Message.WRONG_PASSWORD) 
+        response.accessToken = await this.authservice.createToken(response);
+
+        
         return response;
     }
 
