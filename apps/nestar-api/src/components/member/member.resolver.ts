@@ -1,9 +1,11 @@
-import { BadRequestException, InternalServerErrorException, UsePipes, ValidationPipe } from '@nestjs/common';
+import { BadRequestException, InternalServerErrorException, UseGuards, UsePipes, ValidationPipe } from '@nestjs/common';
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { Member } from '../../libs/dto/member';
 import { LoginInput, MemberInput } from '../../libs/dto/member.input';
-import { Message } from '../../libs/types/enums/common.enum';
+import { AuthGuard } from '../auth/guards/auth.guard';
 import { MemberService } from './member.service';
+import { Message } from '../../libs/types/enums/common.enum';
+import { AuthMember } from '../auth/decorators/authMember.decorator';
 
 @Resolver()
 export class MemberResolver {
@@ -22,10 +24,19 @@ export class MemberResolver {
     }
 
     //Authenticated
+    @UseGuards(AuthGuard)
     @Mutation(() => String)
-    public async updateMember ():Promise<string> {
+    public async updateMember(@AuthMember("_id") ObjectId: Member):Promise<string> {
         console.log("Mutatiion: updateMember")
+        console.log("authmember", ObjectId);
         return this.memberservice.updateMember();
+    }
+
+    @UseGuards(AuthGuard)
+    @Mutation(() => String)
+    public async checkAuth(@AuthMember("memberNick") memberNick: string):Promise<string> {
+        console.log("authmember", memberNick);
+        return `Hi ${memberNick}`;
     }
 
     @Query(() => String)

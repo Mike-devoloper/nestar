@@ -44,11 +44,11 @@ export class MemberService {
     }
     //Authenticated USER
     public async updateMember():Promise<string> {
-        return "login exxecuted" 
+        return "updateMember exxecuted" 
     }
 
     public async getMember():Promise<string> {
-        return "login exxecuted" 
+        return "getMember exxecuted" 
     }
 
 
