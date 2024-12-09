@@ -2,9 +2,10 @@ import { BadRequestException, Injectable, InternalServerErrorException } from '@
 import { Mutation } from '@nestjs/graphql';
 import { InjectModel } from '@nestjs/mongoose';
 import { printSchema } from 'graphql';
-import { Model } from 'mongoose';
+import { Model, ObjectId } from 'mongoose';
 import { Member } from '../../libs/dto/member';
 import { LoginInput, MemberInput } from '../../libs/dto/member.input';
+import { MemberUpdate } from '../../libs/dto/member.update';
 import { Message } from '../../libs/types/enums/common.enum';
 import { MemberStatus } from '../../libs/types/enums/member.enums';
 import { AuthService } from '../auth/auth.service';
@@ -43,8 +44,13 @@ export class MemberService {
         return response;
     }
     //Authenticated USER
-    public async updateMember():Promise<string> {
-        return "updateMember exxecuted" 
+    public async updateMember(memberId: ObjectId, input:MemberUpdate):Promise<Member> {
+        const result: Member = await this.memberModel.findOneAndUpdate(
+            {_id: memberId, memberStatus: MemberStatus.ACTIVE}, input, {new: true}).exec();
+            if(!result) throw new InternalServerErrorException(Message.UPDATE_FAILED);
+
+            result.accessToken = await this.authservice.createToken(result)
+        return result;
     }
 
     public async getMember():Promise<string> {
