@@ -10,6 +10,7 @@ import { MemberService } from './member.service';
   imports: [MongooseModule.forFeature([{name: "Member", schema: MemberSchema}]), AuthModule, ViewModule],
   providers: [
     MemberResolver, 
-    MemberService,]
+    MemberService,],
+    exports: [MemberService]
   })
 export class MemberModule {}
