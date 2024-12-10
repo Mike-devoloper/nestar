@@ -6,13 +6,20 @@ import { Model, ObjectId } from 'mongoose';
 import { Member } from '../../libs/dto/member';
 import { LoginInput, MemberInput } from '../../libs/dto/member.input';
 import { MemberUpdate } from '../../libs/dto/member.update';
+import { ViewInput } from '../../libs/dto/view/view.input';
+import { T } from '../../libs/types/common';
 import { Message } from '../../libs/types/enums/common.enum';
 import { MemberStatus } from '../../libs/types/enums/member.enums';
+import { ViewGroup } from '../../libs/types/enums/view.enum';
 import { AuthService } from '../auth/auth.service';
+import { ViewService } from '../view/view.service';
 
 @Injectable()
 export class MemberService {
-    constructor(@InjectModel('Member') private readonly memberModel: Model<Member>, private readonly authservice: AuthService){}
+    constructor(@InjectModel('Member') 
+    private readonly memberModel: Model<Member>,
+     private readonly authservice: AuthService,
+     private readonly viewService: ViewService){}
     public async signup(input: MemberInput):Promise<Member> {
         input.memberPassword = await this.authservice.hashPassword(input.memberPassword)
         try {
@@ -53,8 +60,27 @@ export class MemberService {
         return result;
     }
 
-    public async getMember():Promise<string> {
-        return "getMember exxecuted" 
+    public async getMember(memberId: ObjectId, targetId: ObjectId):Promise<Member> {
+        const search: T = {
+        _id: targetId,
+        memberStatus: {
+            $in: [MemberStatus.ACTIVE, MemberStatus.BLOCK]
+        }
+    }
+
+        const targetMember = await this.memberModel.findOne(search).exec();
+        if(!targetMember) throw new InternalServerErrorException(Message.NO_DATA_FOUND)
+
+        if(memberId) {
+            const viewInput: ViewInput = {memberId: memberId, viewRefId: targetId, viewGroup: ViewGroup.MEMBER }
+            const newView = await this.viewService.recordView(viewInput);
+            if(newView) {
+                await this.memberModel.findOneAndUpdate(search, {$inc: {memberViews: 1 }}, {new: true}).exec();
+                targetMember.memberViews++;
+            }
+        }
+
+        return targetMember 
     }
 
 
