@@ -1,7 +1,7 @@
 import { BadRequestException, InternalServerErrorException, UseGuards, UsePipes, ValidationPipe } from '@nestjs/common';
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
-import { Member } from '../../libs/dto/member';
-import { LoginInput, MemberInput } from '../../libs/dto/member.input';
+import { Member, Members } from '../../libs/dto/member';
+import { AgentsInquiry, LoginInput, MemberInput } from '../../libs/dto/member.input';
 import { AuthGuard } from '../auth/guards/auth.guard';
 import { MemberService } from './member.service';
 import { Message } from '../../libs/types/enums/common.enum';
@@ -61,6 +61,13 @@ export class MemberResolver {
         console.log("Query: getMember")
         const targetId = shapeIntoMongoDbObjectId(input);
         return this.memberservice.getMember(memberId, targetId);;
+    }
+
+    @UseGuards(WithoutGuard)
+    @Query(() => Members)
+    public async getAgents(@Args('input') input: AgentsInquiry, @AuthMember('_id') memberId: ObjectId):Promise<Members> {
+        console.log("Query: getAgents")
+        return this.memberservice.getAgents(memberId, input);
     }
 
     //Authorization ADMIN

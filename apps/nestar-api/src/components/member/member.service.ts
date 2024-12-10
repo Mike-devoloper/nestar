@@ -3,13 +3,13 @@ import { Mutation } from '@nestjs/graphql';
 import { InjectModel } from '@nestjs/mongoose';
 import { printSchema } from 'graphql';
 import { Model, ObjectId } from 'mongoose';
-import { Member } from '../../libs/dto/member';
-import { LoginInput, MemberInput } from '../../libs/dto/member.input';
+import { Member, Members } from '../../libs/dto/member';
+import { AgentsInquiry, LoginInput, MemberInput } from '../../libs/dto/member.input';
 import { MemberUpdate } from '../../libs/dto/member.update';
 import { ViewInput } from '../../libs/dto/view/view.input';
 import { T } from '../../libs/types/common';
-import { Message } from '../../libs/types/enums/common.enum';
-import { MemberStatus } from '../../libs/types/enums/member.enums';
+import { Direction, Message } from '../../libs/types/enums/common.enum';
+import { MemberStatus, MemberType } from '../../libs/types/enums/member.enums';
 import { ViewGroup } from '../../libs/types/enums/view.enum';
 import { AuthService } from '../auth/auth.service';
 import { ViewService } from '../view/view.service';
@@ -81,6 +81,28 @@ export class MemberService {
         }
 
         return targetMember 
+    }
+
+    public async getAgents(memberId: ObjectId, input: AgentsInquiry):Promise<Members> {
+        const {text} = input.search;
+        const match: T = {memberType: MemberType.AGENT, memberStatus:MemberStatus.ACTIVE}
+        const sort : T = {[input?.sort ?? "createdAt"]: input?.direction ?? Direction.DESC}
+
+        if(text) match.memberNick = {$regex: new RegExp(text, 'i')};
+        console.log("match", match);
+        
+        const result = await this.memberModel.aggregate([
+            {$match: match},
+            {$sort: sort},
+            {
+                $facet:{
+                    list: [{$skip:(input.page - 1)* input.limit}, {$limit: input.limit}],
+                    metaCounter: [{$count: 'total'}]
+                }
+            }
+        ]).exec();
+        if(!result.length) throw new InternalServerErrorException(Message.NO_DATA_FOUND);
+        return result[0];
     }
 
 
