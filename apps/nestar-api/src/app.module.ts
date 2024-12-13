@@ -14,15 +14,15 @@ import { T } from './libs/types/common';
     playground: true,
     uploads: false,
     autoSchemaFile: true,
-    formatError: (error: T) => {
-      const graphqlErrorFormatter = {
-        code: error?.extensions.code,
-        message: 
-        error?.extensions?.exception?.response?.message || error?.extensions?.response?.message || error?.message,
-      }
-      console.log("GRAPHQL GLABAL ERROR", graphqlErrorFormatter);
-      return graphqlErrorFormatter;
-    }
+    // formatError: (error: T) => {
+    //   const graphqlErrorFormatter = {
+    //     code: error?.extensions.code,
+    //     message: 
+    //     error?.extensions?.exception?.response?.message || error?.extensions?.response?.message || error?.message,
+    //   }
+    //   console.log("GRAPHQL GLABAL ERROR", graphqlErrorFormatter);
+    //   return graphqlErrorFormatter;
+    // }
   }),
    ComponentsModule,
     DatabaseModule
