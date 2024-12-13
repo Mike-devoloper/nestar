@@ -4,6 +4,7 @@ import { ObjectId } from 'mongoose';
 import { shapeIntoMongoDbObjectId } from '../../libs/config';
 import { Property } from '../../libs/dto/property/property';
 import { PropertyInput } from '../../libs/dto/property/property.input';
+import { PropertyUpdate } from '../../libs/dto/property/property.update';
 import { MemberType } from '../../libs/types/enums/member.enums';
 import { AuthMember } from '../auth/decorators/authMember.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -32,6 +33,16 @@ export class PropertyResolver {
         console.log("Query: getProperty")
         const propertyId = shapeIntoMongoDbObjectId(input);
         return await this.propertyService.getProperty(memberId, propertyId);
+    }
+
+
+    @Roles(MemberType.AGENT)
+    @UseGuards(RolesGuard)
+    @Mutation((returns) => Property)
+    public async updateProperty(@Args('input') input: PropertyUpdate, @AuthMember('_id') memberId: ObjectId):Promise<Property> {
+        console.log("Query: getProperty")
+        input._id = shapeIntoMongoDbObjectId(input._id);
+        return await this.propertyService.updateProperty(memberId, input);
     }
 
 }

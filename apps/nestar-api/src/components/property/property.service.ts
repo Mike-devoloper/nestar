@@ -1,8 +1,10 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
+import * as moment from 'moment';
 import { Model, ObjectId } from 'mongoose';
 import { Property } from '../../libs/dto/property/property';
 import { PropertyInput } from '../../libs/dto/property/property.input';
+import { PropertyUpdate } from '../../libs/dto/property/property.update';
 import { StatisticModifier, T } from '../../libs/types/common';
 import { Message } from '../../libs/types/enums/common.enum';
 import { PropertyStatus } from '../../libs/types/enums/property.enum';
@@ -48,6 +50,32 @@ export class PropertyService {
 
         targetProperty.memberData = await this.memberService.getMember(null, targetProperty.memberId)
         return targetProperty;
+    }
+
+    public async updateProperty(memberId: ObjectId, input: PropertyUpdate):Promise<Property> {
+        let {propertyStatus, soldAt, deletedAt} = input;
+
+        const search: T = {
+            _id: input._id,
+            memberId: memberId,
+            propertyStatus: PropertyStatus.ACTIVE
+        }
+
+        if(propertyStatus === PropertyStatus.SOLD) soldAt = moment().toDate();
+        else if(propertyStatus === PropertyStatus.DELETE) deletedAt = moment().toDate();
+
+        const result = await this.propertyModel.findOneAndUpdate(search, input, {new: true}).exec()
+
+        if(!result) throw new InternalServerErrorException(Message.UPDATE_FAILED);
+
+        if(soldAt || deletedAt) {
+            await this.memberService.memberStatsEditor({
+                _id: memberId,
+                targetKey: "memberProperties",
+                modifier: -1
+            })
+        }
+        return result;
     }
 
     public async propertyStatsEditor(input: StatisticModifier):Promise<Property>{
