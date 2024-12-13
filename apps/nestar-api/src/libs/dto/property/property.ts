@@ -2,6 +2,7 @@ import { Field, Int, ObjectType } from "@nestjs/graphql";
 import { IsOptional } from "class-validator";
 import { ObjectId } from "mongoose";
 import { PropertyLocation, PropertyStatus, PropertyType } from "../../types/enums/property.enum";
+import { Member } from "../member";
 
 
 @ObjectType()
@@ -77,5 +78,10 @@ export class Property {
 
     @Field(() => String, {nullable: true})
     accessToken?: string;
+
+    //Aggregation
+
+    @Field(() => Member, {nullable: true})
+    memberData?: Member;
 }
 
