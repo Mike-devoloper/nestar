@@ -5,7 +5,7 @@ import * as moment from 'moment';
 import { Model, ObjectId } from 'mongoose';
 import { lookupMember, shapeIntoMongoDbObjectId } from '../../libs/config';
 import { Properties, Property } from '../../libs/dto/property/property';
-import { PropertiesInquiry, PropertyInput } from '../../libs/dto/property/property.input';
+import { AgentPropertyInquiry, PropertiesInquiry, PropertyInput } from '../../libs/dto/property/property.input';
 import { PropertyUpdate } from '../../libs/dto/property/property.update';
 import { StatisticModifier, T } from '../../libs/types/common';
 import { Direction, Message } from '../../libs/types/enums/common.enum';
@@ -143,6 +143,36 @@ export class PropertyService {
             })
         }
     
+    }
+
+
+    public async getAgentProperties(memberId: ObjectId, input:AgentPropertyInquiry):Promise<Properties> {
+        const {propertyStatus} = input.search;
+        if(propertyStatus === PropertyStatus.DELETE) throw new BadRequestException(Message.NOT_ALLOWED_REQUEST)
+        const match: T = {
+            memberId: memberId,
+            propertyStatus:propertyStatus ?? {$ne: PropertyStatus.DELETE}
+        }
+
+        const sort: T = {[input?.sort ?? 'createdAt']: input?.direction ?? Direction.DESC}
+
+        const result = await this.propertyModel.aggregate([
+            {$match: match},
+            {$sort:sort},
+            {
+                $facet: {
+                    list: [
+                        {$skip:(input.page -1)* input.limit},
+                        {$limit: input.limit},
+                        lookupMember,
+                        {$unwind: '$memberData'}
+                    ],
+                    metaCounter: [{$count: 'total'}]
+                }
+            }
+        ]).exec();
+        if(!result.length) throw new InternalServerErrorException(Message.NO_DATA_FOUND);
+        return result[0]
     }
     
     }
