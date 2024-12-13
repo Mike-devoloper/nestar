@@ -70,4 +70,13 @@ export class PropertyResolver {
         console.log("Query getAllPropertiesByAdmin")
         return await this.propertyService.getAllPropertiesByAdmin(memberId, input);
     }   
+
+    @Roles(MemberType.ADMIN)
+    @UseGuards(RolesGuard)
+    @Query((returns) => Property)
+    public async updatePropertiesByAdmin(@Args('input') input: PropertyUpdate, @AuthMember("_id") memberId: ObjectId):Promise<Property> {
+        console.log("Query updatePropertiesByAdmin")
+        input._id = shapeIntoMongoDbObjectId(input._id)
+        return await this.propertyService.updatePropertiesByAdmin(input);
+    }   
 }
