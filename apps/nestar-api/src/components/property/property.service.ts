@@ -1,6 +1,5 @@
 import { BadRequestException, Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { lookup } from 'dns/promises';
 import * as moment from 'moment';
 import { Model, ObjectId } from 'mongoose';
 import { lookupMember, shapeIntoMongoDbObjectId } from '../../libs/config';
@@ -218,6 +217,7 @@ public async getAllPropertiesByAdmin(memberId: ObjectId, input:AllPropertiesInqu
         else if(propertyStatus === PropertyStatus.DELETE) deletedAt = moment().toDate();
 
         const result = await this.propertyModel.findOneAndUpdate(search, input, {new: true}).exec()
+        console.log(result);
 
         if(!result) throw new InternalServerErrorException(Message.UPDATE_FAILED);
 

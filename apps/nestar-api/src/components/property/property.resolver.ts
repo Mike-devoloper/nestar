@@ -73,17 +73,18 @@ export class PropertyResolver {
 
     @Roles(MemberType.ADMIN)
     @UseGuards(RolesGuard)
-    @Query((returns) => Property)
-    public async updatePropertiesByAdmin(@Args('input') input: PropertyUpdate, @AuthMember("_id") memberId: ObjectId):Promise<Property> {
+    @Mutation((returns) => Property)
+    public async updatePropertyByAdmin(@Args('input') input: PropertyUpdate, @AuthMember("_id") memberId: ObjectId):Promise<Property> {
         console.log("Query updatePropertiesByAdmin")
         input._id = shapeIntoMongoDbObjectId(input._id)
+        console.log("after ", input._id)
         return await this.propertyService.updatePropertiesByAdmin(input);
     }   
 
     @Roles(MemberType.ADMIN)
     @UseGuards(RolesGuard)
-    @Query((returns) => Property)
-    public async removePropertiesByAdmin(@Args('propertyId') input: string):Promise<Property> {
+    @Mutation((returns) => Property)
+    public async removePropertyByAdmin(@Args('propertyId') input: string):Promise<Property> {
         console.log("Query updatePropertiesByAdmin")
         const propertyId = shapeIntoMongoDbObjectId(input)
         return await this.propertyService.removePropertiesByAdmin(propertyId);
