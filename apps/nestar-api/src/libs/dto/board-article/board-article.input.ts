@@ -1,8 +1,8 @@
 import { Field, InputType, Int } from '@nestjs/graphql';
 import { IsIn, IsNotEmpty, IsOptional, Length, Min } from 'class-validator';
 import { ObjectId } from 'mongoose';
-import { BoardArticleCategory, BoardArticleStatus } from '../../enums/board-article.enum';
-import { Direction } from '../../enums/common.enum';
+import { BoardArticleCategory, BoardArticleStatus } from '../../types/enums/board-article.enum';
+import { Direction } from '../../types/enums/common.enum';
 
 @InputType()
 export class BoardArticleInput {

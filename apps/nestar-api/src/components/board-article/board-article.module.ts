@@ -10,7 +10,7 @@ import { BoardArticleService } from './board-article.service';
 @Module({
   imports: [MongooseModule.forFeature([
     {
-      name: "Board-Article",
+      name: "BoardArticle",
       schema: BoardArticleSchema
     }
   ]),
