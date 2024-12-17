@@ -1,6 +1,7 @@
 import { Field, InputType, Int } from '@nestjs/graphql';
 import { IsIn, IsNotEmpty, IsOptional, Length, Min } from 'class-validator';
 import { ObjectId } from 'mongoose';
+import { availableArticleSorts } from '../../config';
 import { BoardArticleCategory, BoardArticleStatus } from '../../types/enums/board-article.enum';
 import { Direction } from '../../types/enums/common.enum';
 
@@ -55,7 +56,7 @@ export class BoardArticlesInquiry {
 	limit: number;
 
 	@IsOptional()
-	@IsIn(['createdAt', 'updatedAt', 'articleLikes', 'articleViews'])
+	@IsIn(availableArticleSorts)
 	@Field(() => String, { nullable: true })
 	sort?: string;
 
@@ -92,7 +93,7 @@ export class AllBoardArticlesInquiry {
 	limit: number;
 
 	@IsOptional()
-	@IsIn(['createdAt', 'updatedAt', 'articleLikes', 'articleViews'])
+	@IsIn(availableArticleSorts)
 	@Field(() => String, { nullable: true })
 	sort?: string;
 
