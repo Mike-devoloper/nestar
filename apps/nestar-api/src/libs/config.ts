@@ -38,3 +38,5 @@ export const lookupMember = {
         as: 'memberData'
     }
 }
+
+export const availableCommentSorts = ["createdAt", "updatedAt"]
