@@ -1,5 +1,5 @@
 import { Field, ObjectType } from '@nestjs/graphql';
-import { LikeGroup } from '../../enums/like.enum';
+import { LikeGroup } from '../../types/enums/like.enum';
 import { ObjectId } from 'mongoose';
 
 @ObjectType()
