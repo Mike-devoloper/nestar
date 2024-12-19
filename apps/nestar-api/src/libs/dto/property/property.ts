@@ -2,6 +2,7 @@ import { Field, Int, ObjectType } from "@nestjs/graphql";
 import { IsOptional } from "class-validator";
 import { ObjectId } from "mongoose";
 import { PropertyLocation, PropertyStatus, PropertyType } from "../../types/enums/property.enum";
+import { MeLiked } from "../like/like";
 import { Member, TotalCounter } from "../member";
 
 
@@ -86,6 +87,9 @@ export class Property {
 
     @Field(() => Member, {nullable: true})
     memberData?: Member;
+
+    @Field(() => [MeLiked], {nullable: true})
+    meLiked?: MeLiked[]
 }
 
 @ObjectType()
