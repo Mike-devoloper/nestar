@@ -3,20 +3,26 @@ import { InjectModel } from '@nestjs/mongoose';
 import * as moment from 'moment';
 import { Model, ObjectId } from 'mongoose';
 import { lookupMember, shapeIntoMongoDbObjectId } from '../../libs/config';
+import { LikeInput } from '../../libs/dto/like/like.input';
 import { Properties, Property } from '../../libs/dto/property/property';
 import { AgentPropertyInquiry, AllPropertiesInquiry, PropertiesInquiry, PropertyInput } from '../../libs/dto/property/property.input';
 import { PropertyUpdate } from '../../libs/dto/property/property.update';
 import { StatisticModifier, T } from '../../libs/types/common';
 import { Direction, Message } from '../../libs/types/enums/common.enum';
+import { LikeGroup } from '../../libs/types/enums/like.enum';
 import { PropertyStatus } from '../../libs/types/enums/property.enum';
 import { ViewGroup } from '../../libs/types/enums/view.enum';
+import { LikeService } from '../like/like.service';
 import { MemberService } from '../member/member.service';
 import { ViewService } from '../view/view.service';
 
 @Injectable()
 export class PropertyService {
     constructor(@InjectModel('Property') 
-    private readonly propertyModel: Model<Property>, private memberService: MemberService, private viewService: ViewService) {}
+    private readonly propertyModel: Model<Property>, 
+    private memberService: MemberService, 
+    private viewService: ViewService,
+    private likeService: LikeService) {}
 
     public async createProperty(input: PropertyInput):Promise<Property>{
         try{
@@ -172,6 +178,27 @@ export class PropertyService {
         ]).exec();
         if(!result.length) throw new InternalServerErrorException(Message.NO_DATA_FOUND);
         return result[0]
+    }
+
+    public async likeTargetProperty(memberId: ObjectId, likeRefId: ObjectId):Promise<Property>{
+        const target: Property = await this.propertyModel.findOne({_id: likeRefId, propertyStatus: PropertyStatus.ACTIVE}).exec();
+        if(!target) throw new InternalServerErrorException(Message.NO_DATA_FOUND);
+
+        const input: LikeInput = {
+            memberId: memberId,
+            likeRefId: likeRefId,
+            likeGroup: LikeGroup.PROPERTY
+        }
+
+        //Like Toggle -1 +1 via like service model
+        const modifier: number = await this.likeService.toggleLike(input);
+        const result = await this.propertyStatsEditor({
+            _id: likeRefId,
+            targetKey: "propertyLikes",
+            modifier: modifier
+        })
+        if(!result) throw new InternalServerErrorException(Message.SOMETHING_WENT_WRONG);
+        return result;
     }
 
     //Admin

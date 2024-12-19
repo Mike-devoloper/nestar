@@ -5,10 +5,13 @@ import { lookupMember, shapeIntoMongoDbObjectId } from '../../libs/config';
 import { BoardArticle, BoardArticles } from '../../libs/dto/board-article/board-article';
 import { AllBoardArticlesInquiry, BoardArticleInput, BoardArticlesInquiry } from '../../libs/dto/board-article/board-article.input';
 import { BoardArticleUpdate } from '../../libs/dto/board-article/board-article.update';
+import { LikeInput } from '../../libs/dto/like/like.input';
 import { StatisticModifier, T } from '../../libs/types/common';
 import { BoardArticleStatus } from '../../libs/types/enums/board-article.enum';
 import { Direction, Message } from '../../libs/types/enums/common.enum';
+import { LikeGroup } from '../../libs/types/enums/like.enum';
 import { ViewGroup } from '../../libs/types/enums/view.enum';
+import { LikeService } from '../like/like.service';
 import { MemberService } from '../member/member.service';
 import { ViewService } from '../view/view.service';
 
@@ -16,7 +19,8 @@ import { ViewService } from '../view/view.service';
 export class BoardArticleService {
     constructor(@InjectModel('BoardArticle') private readonly boardArticleModel: Model<BoardArticle>,
     private readonly memberService: MemberService,
-    private readonly viewService: ViewService) {}
+    private readonly viewService: ViewService,
+    private readonly likeService: LikeService) {}
 
     public async createBoardArticle(memberId: ObjectId, input: BoardArticleInput):Promise<BoardArticle> {
         input.memberId = memberId;
@@ -117,6 +121,28 @@ export class BoardArticleService {
     
         return result[0];
     }
+
+    public async likeTargetArticle(memberId: ObjectId, likeRefId: ObjectId):Promise<BoardArticle>{
+        const target: BoardArticle = await this.boardArticleModel.findOne({_id: likeRefId, articleStatus: BoardArticleStatus.ACTIVE}).exec();
+        if(!target) throw new InternalServerErrorException(Message.NO_DATA_FOUND);
+
+        const input: LikeInput = {
+            memberId: memberId,
+            likeRefId: likeRefId,
+            likeGroup: LikeGroup.ARTICLE
+        }
+
+        //Like Toggle -1 +1 via like service model
+        const modifier: number = await this.likeService.toggleLike(input);
+        const result = await this.boardArticleStatsEditor({
+            _id: likeRefId,
+            targetKey: "articleLikes",
+            modifier: modifier
+        })
+        if(!result) throw new InternalServerErrorException(Message.SOMETHING_WENT_WRONG);
+        return result;
+    }
+
 
     //Admin
 

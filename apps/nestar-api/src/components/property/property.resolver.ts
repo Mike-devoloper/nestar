@@ -8,13 +8,15 @@ import { PropertyUpdate } from '../../libs/dto/property/property.update';
 import { MemberType } from '../../libs/types/enums/member.enums';
 import { AuthMember } from '../auth/decorators/authMember.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
+import { AuthGuard } from '../auth/guards/auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { WithoutGuard } from '../auth/guards/without.guard';
+import { LikeService } from '../like/like.service';
 import { PropertyService } from './property.service';
 
 @Resolver()
 export class PropertyResolver {
-    constructor(private readonly propertyService: PropertyService) {}
+    constructor(private readonly propertyService: PropertyService, private readonly likeService: LikeService) {}
     
 
     @Roles(MemberType.AGENT)
@@ -61,6 +63,15 @@ export class PropertyResolver {
         console.log("Query getPropertyAgenst")
         return await this.propertyService.getAgentProperties(memberId, input);
     }
+
+    @UseGuards(AuthGuard)
+    @Mutation(() => Property)
+    public async likeTargetProperty(@Args('memberId') input: string, @AuthMember("_id") memberId: ObjectId):Promise<Property>{
+        console.log("MUtation likeTargetProperty")
+        const likeRefId = shapeIntoMongoDbObjectId(input)
+        return await this.propertyService.likeTargetProperty(memberId, likeRefId)
+    }
+
 
     //Admin 
     @Roles(MemberType.ADMIN)
