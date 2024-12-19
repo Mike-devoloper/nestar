@@ -2,15 +2,19 @@ import { BadRequestException, Injectable, InternalServerErrorException } from '@
 import { Mutation } from '@nestjs/graphql';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, ObjectId } from 'mongoose';
+import { measureMemory } from 'vm';
+import { LikeInput } from '../../libs/dto/like/like.input';
 import { Member, Members } from '../../libs/dto/member';
 import { AgentsInquiry, LoginInput, MemberInput, MembersInquiry } from '../../libs/dto/member.input';
 import { MemberUpdate } from '../../libs/dto/member.update';
 import { ViewInput } from '../../libs/dto/view/view.input';
 import { StatisticModifier, T } from '../../libs/types/common';
 import { Direction, Message } from '../../libs/types/enums/common.enum';
+import { LikeGroup } from '../../libs/types/enums/like.enum';
 import { MemberStatus, MemberType } from '../../libs/types/enums/member.enums';
 import { ViewGroup } from '../../libs/types/enums/view.enum';
 import { AuthService } from '../auth/auth.service';
+import { LikeService } from '../like/like.service';
 import { ViewService } from '../view/view.service';
 
 @Injectable()
@@ -18,7 +22,8 @@ export class MemberService {
     constructor(@InjectModel('Member') 
     private readonly memberModel: Model<Member>,
      private readonly authservice: AuthService,
-     private readonly viewService: ViewService){}
+     private readonly viewService: ViewService,
+     private readonly likeService: LikeService){}
     public async signup(input: MemberInput):Promise<Member> {
         input.memberPassword = await this.authservice.hashPassword(input.memberPassword)
         try {
@@ -105,6 +110,28 @@ export class MemberService {
         ]).exec();
         if(!result.length) throw new InternalServerErrorException(Message.NO_DATA_FOUND);
         return result[0];
+    }
+
+
+    public async likeTargetMember(memberId: ObjectId, likeRefId: ObjectId):Promise<Member>{
+        const target: Member = await this.memberModel.findOne({_id: likeRefId, memberStatus: MemberStatus.ACTIVE}).exec();
+        if(!target) throw new InternalServerErrorException(Message.NO_DATA_FOUND);
+
+        const input: LikeInput = {
+            memberId: memberId,
+            likeRefId: likeRefId,
+            likeGroup: LikeGroup.MEMBER
+        }
+
+        //Like Toggle -1 +1 via like service model
+        const modifier: number = await this.likeService.toggleLike(input);
+        const result = await this.memberStatsEditor({
+            _id: likeRefId,
+            targetKey: "memberLikes",
+            modifier: modifier
+        })
+        if(!result) throw new InternalServerErrorException(Message.SOMETHING_WENT_WRONG);
+        return result;
     }
 
 
