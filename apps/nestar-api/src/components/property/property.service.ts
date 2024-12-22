@@ -2,7 +2,7 @@ import { BadRequestException, Injectable, InternalServerErrorException } from '@
 import { InjectModel } from '@nestjs/mongoose';
 import * as moment from 'moment';
 import { Model, ObjectId } from 'mongoose';
-import { lookupMember, shapeIntoMongoDbObjectId } from '../../libs/config';
+import { lookupAuthMemberLiked, lookupMember, shapeIntoMongoDbObjectId } from '../../libs/config';
 import { LikeInput } from '../../libs/dto/like/like.input';
 import { Properties, Property } from '../../libs/dto/property/property';
 import { AgentPropertyInquiry, AllPropertiesInquiry, PropertiesInquiry, PropertyInput } from '../../libs/dto/property/property.input';
@@ -103,7 +103,7 @@ export class PropertyService {
                     list: [
                         {$skip:(input.page -1)* input.limit},
                         {$limit: input.limit},
-                        //meliked
+                        lookupAuthMemberLiked(memberId),
                         lookupMember,
                         {$unwind: '$memberData'}
                     ],
