@@ -3,6 +3,7 @@ import { Mutation } from '@nestjs/graphql';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, ObjectId } from 'mongoose';
 import { measureMemory } from 'vm';
+import { lookupAuthMemberLiked } from '../../libs/config';
 import { Follower, Following, MeFollowed } from '../../libs/dto/follow/follow';
 import { LikeInput } from '../../libs/dto/like/like.input';
 import { Member, Members } from '../../libs/dto/member';
@@ -112,7 +113,9 @@ export class MemberService {
             {
                 $facet:{
                     list: [{$skip:(input.page - 1)* input.limit}, {$limit: input.limit}],
-                    metaCounter: [{$count: 'total'}]
+                    metaCounter: [{$count: 'total'},
+                    lookupAuthMemberLiked(memberId)
+                ]
                 }
             }
         ]).exec();
