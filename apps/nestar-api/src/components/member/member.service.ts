@@ -3,6 +3,7 @@ import { Mutation } from '@nestjs/graphql';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, ObjectId } from 'mongoose';
 import { measureMemory } from 'vm';
+import { Follower, Following, MeFollowed } from '../../libs/dto/follow/follow';
 import { LikeInput } from '../../libs/dto/like/like.input';
 import { Member, Members } from '../../libs/dto/member';
 import { AgentsInquiry, LoginInput, MemberInput, MembersInquiry } from '../../libs/dto/member.input';
@@ -21,6 +22,8 @@ import { ViewService } from '../view/view.service';
 export class MemberService {
     constructor(@InjectModel('Member') 
     private readonly memberModel: Model<Member>,
+    @InjectModel('Follow') 
+    private readonly followModel: Model<Follower | Following>,
      private readonly authservice: AuthService,
      private readonly viewService: ViewService,
      private readonly likeService: LikeService){}
@@ -86,10 +89,15 @@ export class MemberService {
 
         const likeInput = {memberId: memberId, likeRefId: targetId, likeGroup: LikeGroup.MEMBER};
         targetMember.meLiked = await this.likeService.checkLikeExistence(likeInput)
-        //memberLiked
+        
         //memberFollowed
-
+       targetMember.meFollowed =  await this.getCheckSubscription(memberId, targetId)
         return targetMember 
+    }
+
+    public async getCheckSubscription(followerId:ObjectId, followingId:ObjectId):Promise<MeFollowed[]>{
+        const result = await this.followModel.findByIdAndUpdate({followerId: followerId, followingId: followingId}).exec();
+        return result ? [{followerId: followerId, followingId: followingId, myFollowing: true}] : [];
     }
 
     public async getAgents(memberId: ObjectId, input: AgentsInquiry):Promise<Members> {
