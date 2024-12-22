@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, ObjectId } from 'mongoose';
-import { lookupAuthMemberLiked, lookupFollowerData, lookupFollowingData } from '../../libs/config';
+import { lookupAuthMemberFollowed, lookupAuthMemberLiked, lookupFollowerData, lookupFollowingData } from '../../libs/config';
 import { Following, Follower, Followings, Followers } from '../../libs/dto/follow/follow';
 import { FollowInquiry } from '../../libs/dto/follow/follow.input';
 import { T } from '../../libs/types/common';
@@ -73,8 +73,10 @@ export class FollowService {
                         list: [
                             { $skip: (page - 1) * limit },
                             { $limit: limit },
-                            // meLiked
-                            // meFollowed
+                            lookupAuthMemberFollowed({
+                                followerId: memberId,
+                                followingId: "$followerId"
+                            }),
                             lookupAuthMemberLiked(memberId, "$followingId"),
                             lookupFollowingData,
                             { $unwind: '$followingData' },
@@ -105,8 +107,11 @@ export class FollowService {
                         list: [
                             { $skip: (page - 1) * limit },
                             { $limit: limit },
-                            // meLiked
                             // meFollowed
+                            lookupAuthMemberFollowed({
+                                followerId: memberId,
+                                followingId: "$followerId"
+                            }),
                             lookupAuthMemberLiked(memberId, "$followerId"),
                             lookupFollowerData,
                             { $unwind: '$followerData' },
