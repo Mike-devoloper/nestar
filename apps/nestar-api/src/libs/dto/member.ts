@@ -13,7 +13,7 @@ export class Member {
     memberType: MemberType
 
     @Field(() => MemberAuth)
-    memberAuth: MemberAuth
+    memberAuthType: MemberAuth
 
     @Field(() => MemberStatus)
     memberStatus: MemberStatus
