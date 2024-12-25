@@ -5,7 +5,7 @@ import { Model, ObjectId } from 'mongoose';
 import { lookupAuthMemberLiked, lookupMember, shapeIntoMongoDbObjectId } from '../../libs/config';
 import { LikeInput } from '../../libs/dto/like/like.input';
 import { Properties, Property } from '../../libs/dto/property/property';
-import { AgentPropertyInquiry, AllPropertiesInquiry, PropertiesInquiry, PropertyInput } from '../../libs/dto/property/property.input';
+import { AgentPropertyInquiry, AllPropertiesInquiry, OrdinaryInquiry, PropertiesInquiry, PropertyInput } from '../../libs/dto/property/property.input';
 import { PropertyUpdate } from '../../libs/dto/property/property.update';
 import { StatisticModifier, T } from '../../libs/types/common';
 import { Direction, Message } from '../../libs/types/enums/common.enum';
@@ -153,6 +153,9 @@ export class PropertyService {
     
     }
 
+    public async getFavorites(memberId:ObjectId, input:OrdinaryInquiry):Promise<Properties>{
+        return await this.likeService.getFavoriteProperties(memberId, input)
+    }
 
     public async getAgentProperties(memberId: ObjectId, input:AgentPropertyInquiry):Promise<Properties> {
         const {propertyStatus} = input.search;

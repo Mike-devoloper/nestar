@@ -3,7 +3,7 @@ import { Args, Mutation, Resolver, Query } from '@nestjs/graphql';
 import { ObjectId } from 'mongoose';
 import { shapeIntoMongoDbObjectId } from '../../libs/config';
 import { Properties, Property } from '../../libs/dto/property/property';
-import { AgentPropertyInquiry, AllPropertiesInquiry, PropertiesInquiry, PropertyInput } from '../../libs/dto/property/property.input';
+import { AgentPropertyInquiry, AllPropertiesInquiry, OrdinaryInquiry, PropertiesInquiry, PropertyInput } from '../../libs/dto/property/property.input';
 import { PropertyUpdate } from '../../libs/dto/property/property.update';
 import { MemberType } from '../../libs/types/enums/member.enums';
 import { AuthMember } from '../auth/decorators/authMember.decorator';
@@ -54,6 +54,13 @@ export class PropertyResolver {
     public async getProperties(@Args('input') input: PropertiesInquiry, @AuthMember('_id') memberId: ObjectId):Promise<Properties> {
         console.log("Query: getProperty");
         return await this.propertyService.getProperties(memberId, input);
+    }
+
+    @UseGuards(AuthGuard)
+    @Query((returns) => Properties)
+    public async getFavorites(@Args('input') input: OrdinaryInquiry, @AuthMember('_id') memberId: ObjectId):Promise<Properties> {
+        console.log("Query: getProperty");
+        return await this.propertyService.getFavorites(memberId, input);
     }
 
     @Roles(MemberType.AGENT)
