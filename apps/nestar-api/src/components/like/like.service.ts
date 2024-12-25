@@ -54,7 +54,7 @@ export class LikeService {
             {
                 $lookup: {
                     from: "properties",
-                    localField: "like",
+                    localField: "likeRefId",
                     foreignField: "_id",
                     as: "favoriteProperty",
                 }
