@@ -15,7 +15,7 @@ export class BatchController {
     this.logger.debug("Batch is ready ")
   }
 
-  @Cron("00 00 * * * *", {name: BATCH_ROLLBACK})
+  @Cron("00 00 01 * * *", {name: BATCH_ROLLBACK})
   public async batchRollBack() {
     try{
       this.logger["context"] = BATCH_ROLLBACK
@@ -26,10 +26,10 @@ export class BatchController {
     }
   }
 
-  @Cron("20 00 * * * *", {name: BATCH_TOP_PROPERTIES})
-  public batchProperties() {
+  @Cron("20 00 01 * * *", {name: BATCH_TOP_PROPERTIES})
+  public async batchTopProperties() {
     try{
-
+      await this.batchService.batchTopProperties()
     } catch(err) {
       this.logger.error(err);
     }
@@ -37,10 +37,10 @@ export class BatchController {
     this.logger.debug("exxecuted ")
   }
 
-  @Cron("40 00 * * * *", {name: BATCH_TOP_AGENTS})
-  public cronTest() {
+  @Cron("40 00 01 * * *", {name: BATCH_TOP_AGENTS})
+  public async batchTopAgents() {
     try{
-
+      await this.batchService.batchTopAgents()
     } catch(err) {
       this.logger.error(err);
     }
